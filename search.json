@@ -1,0 +1,79 @@
+[
+  {
+    "objectID": "index.html#readwrite-backends",
+    "href": "index.html#readwrite-backends",
+    "title": "Rasters.jl",
+    "section": "Read/Write Backends",
+    "text": "Read/Write Backends\n\nNetcdf/hdf5\nGeoTIFF and other GDAL compatible formats\nGribb (read only)\nZarr (PR nearly done!)\nR grd (simple mmapped data from R)"
+  },
+  {
+    "objectID": "index.html#backend-detection",
+    "href": "index.html#backend-detection",
+    "title": "Rasters.jl",
+    "section": "Backend detection",
+    "text": "Backend detection\n# Single array\nrast = Raster(\"myrasterfile.ext\")\n\n# Multi-array\nst = RasterStack(\"myrasterstack.ext\")\n\n# Series of rasters or stacks may be detectable from folders\nst = RasterSeries(\"myrasterfolder\", Ti(DateTime))"
+  },
+  {
+    "objectID": "index.html#diskarrays.jl-integration",
+    "href": "index.html#diskarrays.jl-integration",
+    "title": "Rasters.jl",
+    "section": "DiskArrays.jl integration",
+    "text": "DiskArrays.jl integration\nLoads dimension names, lookups and other metadata up front with lazy=true keyword in constructors:\nrast = Raster(filename; lazy=true)\nStill lazy after broadcasts:\nrast .* 10"
+  },
+  {
+    "objectID": "index.html#change-chunk-patterned-for-more-efficient-lazy-reads",
+    "href": "index.html#change-chunk-patterned-for-more-efficient-lazy-reads",
+    "title": "Rasters.jl",
+    "section": "Change chunk patterned for more efficient lazy reads:",
+    "text": "Change chunk patterned for more efficient lazy reads:\n\n\nwrite(\"rechunked.tif\", raster; chunks=(256, 256))\n\nRasterStack(\"myrasterstack.ext\")"
+  },
+  {
+    "objectID": "index.html#rasterdatasources.jl-integration",
+    "href": "index.html#rasterdatasources.jl-integration",
+    "title": "Rasters.jl",
+    "section": "RasterDataSources.jl integration",
+    "text": "RasterDataSources.jl integration\n\nLoad a raster the standard way, from a filename:\n\nusing Rasters, ArchGDAL, RasterDataSources, CairoMakie\nbioclim_filename = RasterDataSources.getraster(WorldClim{BioClim}, 5)\nbioclim5 = Raster(bioclim_filename);\n\n\nOr use RasterDataSources syntax directly:\n\nbioclim_filename = Raster(WorldClim{BioClim}, 5);"
+  },
+  {
+    "objectID": "index.html#plots.jl",
+    "href": "index.html#plots.jl",
+    "title": "Rasters.jl",
+    "section": "Plots.jl",
+    "text": "Plots.jl\n\nusing Plots\nPlots.plot(bioclim5)"
+  },
+  {
+    "objectID": "index.html#makie.jl",
+    "href": "index.html#makie.jl",
+    "title": "Rasters.jl",
+    "section": "Makie.jl",
+    "text": "Makie.jl\n\nusing CairoMakie\nMakie.plot(bioclim5)"
+  },
+  {
+    "objectID": "index.html#geomakie.jl",
+    "href": "index.html#geomakie.jl",
+    "title": "Rasters.jl",
+    "section": "GeoMakie.jl",
+    "text": "GeoMakie.jl\n\nusing GeoMakie\nfig = Figure();\nga = GeoAxis(fig[1, 1]; dest=\"+proj=ortho +lon_0=19 +lat_0=72\")\nMakie.heatmap!(ga, bioclim5; colormap=:isoluminant_cgo_70_c39_n256)\nfig"
+  },
+  {
+    "objectID": "index.html#mask-trim",
+    "href": "index.html#mask-trim",
+    "title": "Rasters.jl",
+    "section": "mask, trim",
+    "text": "mask, trim\n\ncountries = DataFrame(naturalearth(\"ne_10m_admin_0_countries\"))\nnorway_border = subset(countries, :NAME =&gt; ByRow(==(\"Norway\"))).geometry[1]\nclimate = RasterStack(WorldClim{Climate}, (:tmin, :tmax, :prec, :wind); month=July)\nnorway_climate = trim(mask(climate; with=norway_border)[Y=0 .. 90]; pad=10)\nPlots.plot(norway_climate; size=(1000, 500))"
+  },
+  {
+    "objectID": "index.html#extract",
+    "href": "index.html#extract",
+    "title": "Rasters.jl",
+    "section": "extract",
+    "text": "extract\nExtract climate data at species occurrence points:\n\nusing Rasters, GBIF2, RasterDataSources\nrecords = GBIF2.occurrence_search(\"Burramys parvus\")\nA = RasterStack(WorldClim{BioClim})\nclimate = extract(A, records; name=(:bio1, :bio4, :bio7)) |&gt; DataFrame\n\n20×4 DataFrame\n\n\n\nRow\ngeometry\nbio1\nbio4\nbio7\n\n\n\nTuple…?\nFloat32?\nFloat32?\nFloat32?\n\n\n\n\n1\n(148.391, -36.3036)\n6.1707\n502.798\n23.4645\n\n\n2\nmissing\nmissing\nmissing\nmissing\n\n\n3\n(148.396, -36.3818)\n6.88158\n484.889\n23.133\n\n\n4\nmissing\nmissing\nmissing\nmissing\n\n\n5\n(147.096, -36.9357)\n9.40835\n492.567\n23.0895\n\n\n6\nmissing\nmissing\nmissing\nmissing\n\n\n7\nmissing\nmissing\nmissing\nmissing\n\n\n8\n(148.333, -36.4333)\n7.83572\n492.505\n23.5028\n\n\n9\n(148.236, -36.5249)\n8.0016\n479.975\n22.8522\n\n\n10\nmissing\nmissing\nmissing\nmissing\n\n\n11\n(148.347, -36.5047)\n8.4207\n470.417\n23.142\n\n\n12\nmissing\nmissing\nmissing\nmissing\n\n\n13\n(148.329, -36.4317)\n7.83572\n492.505\n23.5028\n\n\n14\n(147.1, -37.0)\n8.25414\n485.855\n22.2347\n\n\n15\n(148.241, -36.4001)\n7.83572\n492.505\n23.5028\n\n\n16\nmissing\nmissing\nmissing\nmissing\n\n\n17\nmissing\nmissing\nmissing\nmissing\n\n\n18\nmissing\nmissing\nmissing\nmissing\n\n\n19\nmissing\nmissing\nmissing\nmissing\n\n\n20\nmissing\nmissing\nmissing\nmissing"
+  },
+  {
+    "objectID": "index.html#zonal-statistics",
+    "href": "index.html#zonal-statistics",
+    "title": "Rasters.jl",
+    "section": "zonal statistics",
+    "text": "zonal statistics\nHottest and coldest countries in July:\n\ncountries = DataFrame(naturalearth(\"ne_10m_admin_0_countries\"))\nclim = Raster(WorldClim{Climate}, :tmax; month=July)\ncountries.july_maxtemp = zonal(Statistics.mean, clim; \n    of=countries, boundary=:touches, progress=false\n)\nsort!(subset(countries, :july_maxtemp =&gt; ByRow(!isnan)), :july_maxtemp).NAME\n\n254-element Vector{String}:\n \"Antarctica\"\n \"Greenland\"\n \"Southern Patagonian Ice Field\"\n \"S. Geo. and the Is.\"\n \"Heard I. and McDonald Is.\"\n \"Falkland Is.\"\n \"Fr. S. Antarctic Lands\"\n \"Siachen Glacier\"\n \"Chile\"\n \"New Zealand\"\n ⋮\n \"Bir Tawil\"\n \"Bahrain\"\n \"Mauritania\"\n \"Algeria\"\n \"Qatar\"\n \"Saudi Arabia\"\n \"United Arab Emirates\"\n \"Iraq\"\n \"Kuwait\""
+  }
+]
